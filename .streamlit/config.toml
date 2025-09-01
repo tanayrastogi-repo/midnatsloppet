@@ -1,0 +1,5 @@
+# Streamlit configuration (theme, server settings)
+[theme]
+backgroundColor = "rgba(15, 51, 215, 0.8)"
+textColor = "rgba(245, 245, 245, 1)"
+font = "cool-font, fallback-cool-font, sans-serif"
