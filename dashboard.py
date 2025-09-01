@@ -50,7 +50,8 @@ def main():
 
 
     #---------- Average and Median Finish Times ----------#
-
+    fig = race.plot_hist_times_gender_class()
+    st.plotly_chart(fig, use_container_width=True)
 
 
 

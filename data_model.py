@@ -2,6 +2,7 @@ import pandas as pd
 import re
 from datetime import timedelta
 import plotly.graph_objects as go
+import plotly.express as px
 
 class Race: 
     def __init__(self, datasetPath="data/midnattsloppet_result_Stockholm_2025_Individual_10k.feather"):
@@ -27,7 +28,16 @@ class Race:
         return race_group
 
 
-
+    def plot_hist_times_gender_class(self, ):
+        # Drop the "U" gender categories
+        plot_data = self.data.drop(self.data[self.data["gender"] == "U"].index)
+        fig = px.scatter(plot_data, x="age_grp", y=plot_data["time"].dt.total_seconds()/60, color="gender",
+                     color_discrete_sequence=["seagreen", "goldenrod"],
+                     labels=dict(age_grp="Age Group", gender="Gender", y="Minutes"))
+        fig.update_xaxes(categoryorder='array', categoryarray= ['1-15',  '16-17', '18-19', '20-22', '23-34', '35-39',
+                                                                '40-44', '45-49', '50-54', '55-59', '60-64', '65-69',
+                                                                '70-74', '75-'])
+        return fig
 
 
 
@@ -96,7 +106,7 @@ def age_vs_gender_pyramid(scb_grp, scb_nrl, race_grp, race_nrl):
                 text=scb_grp["men"].astype('int'),
                 textposition = "none",
                 hoverinfo='text',
-                marker=dict(color='powderblue')
+                marker=dict(color='green')
                 ),
             go.Bar(y=y,
                 x=-scb_nrl["women"],
@@ -105,7 +115,7 @@ def age_vs_gender_pyramid(scb_grp, scb_nrl, race_grp, race_nrl):
                 text=scb_grp["women"].astype('int'),
                 textposition = "none",
                 hoverinfo='text',
-                marker=dict(color='seagreen')
+                marker=dict(color='red')
                 ),
             go.Bar(y=y,
                 x=race_nrl["M"],
@@ -115,7 +125,7 @@ def age_vs_gender_pyramid(scb_grp, scb_nrl, race_grp, race_nrl):
                 hoverinfo='text',
                 showlegend=False,
                 opacity=0.5,
-                marker=dict(color='teal')
+                marker=dict(color='darkgreen')
                 ),
             go.Bar(y=y,
                 x=-race_nrl["F"],
@@ -125,7 +135,7 @@ def age_vs_gender_pyramid(scb_grp, scb_nrl, race_grp, race_nrl):
                 hoverinfo='text',
                 showlegend=False,
                 opacity=0.5,
-                marker=dict(color='darkgreen')
+                marker=dict(color='darkred')
                 )]
     return go.Figure(layout=layout, data=data)
 
