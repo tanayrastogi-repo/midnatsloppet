@@ -32,8 +32,7 @@ def main():
                 </div>
             """, unsafe_allow_html=True)
 
-
-    #---------- AGE-VS-GENDER ----------#
+    #---------- Participant Data Analysis----------#
     race = Race()
     scb = SCB()
 
@@ -43,13 +42,23 @@ def main():
     scb_grp  = scb.get_age_gender_table(age_grp=race_grp.index)
     scb_nrl = normalized(scb_grp)
 
+
+
+
+    #---------- Participant Demographics----------#
+    # AGE and GENDER based participation
     fig = age_vs_gender_pyramid(scb_grp, scb_nrl, race_grp, race_nrl)
     st.plotly_chart(fig, use_container_width=True)
+    with st.expander("Associated Data"):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("## SCB Data")
+            st.data_editor(scb_grp)
+        with col2: 
+            st.markdown("## Race Data")
+            st.data_editor(race_grp)
 
-
-
-
-    #---------- Average and Median Finish Times ----------#
+    # MEAN Finish time based on class-gender
     fig = race.plot_hist_times_gender_class()
     st.plotly_chart(fig, use_container_width=True)
 

@@ -4,7 +4,7 @@ from datetime import timedelta
 import plotly.graph_objects as go
 import plotly.express as px
 
-class Race: 
+class Race:
     def __init__(self, datasetPath="data/midnattsloppet_result_Stockholm_2025_Individual_10k.feather"):
 
         # Loading dataset
@@ -19,7 +19,14 @@ class Race:
 
     def format_time(self, ):
         def mmss_to_timedelta(s: str) -> timedelta:
-            return timedelta(minutes=int(s.split(':')[0]), seconds=int(s.split(':')[1]))
+            splt = s.split(":")
+            if len(splt) == 2:
+                return timedelta(minutes=int(splt[0]), seconds=int(splt[1]))
+            elif len(splt) == 3:
+                return timedelta(hours=int(splt[0]), minutes=int(splt[1]), seconds=int(splt[2]))
+            else:
+                raise ValueError('Wrong format of time')
+
         self.data["time"] = self.data["time"].apply(lambda x: mmss_to_timedelta(x))
 
 
@@ -29,14 +36,32 @@ class Race:
 
 
     def plot_hist_times_gender_class(self, ):
+        # Preparing for plotting
+        plot_data = self.data.copy()
         # Drop the "U" gender categories
-        plot_data = self.data.drop(self.data[self.data["gender"] == "U"].index)
-        fig = px.scatter(plot_data, x="age_grp", y=plot_data["time"].dt.total_seconds()/60, color="gender",
-                     color_discrete_sequence=["seagreen", "goldenrod"],
-                     labels=dict(age_grp="Age Group", gender="Gender", y="Minutes"))
-        fig.update_xaxes(categoryorder='array', categoryarray= ['1-15',  '16-17', '18-19', '20-22', '23-34', '35-39',
-                                                                '40-44', '45-49', '50-54', '55-59', '60-64', '65-69',
-                                                                '70-74', '75-'])
+        plot_data = plot_data.drop(plot_data[plot_data["gender"] == "U"].index)
+        # Drop the participants that did not finish the race
+        plot_data = plot_data.drop(plot_data[plot_data["place"] == ""].index)
+        # Time to minutes
+        plot_data["time_min"] = plot_data["time"].dt.total_seconds() / 60.0
+
+
+        ### PLOT
+        gender_order = ["M", "F"]
+        age_order    = ['1-15',  '16-17', '18-19', '20-22', '23-34', '35-39',
+                        '40-44', '45-49', '50-54', '55-59', '60-64', '65-69',
+                        '70-74', '75-']
+
+        fig = px.violin(plot_data, x="time_min", y="age_grp", color="age_grp",
+                        facet_col="gender", orientation="h", hover_data=["name"],
+                        category_orders={"age_grp": age_order, "gender": gender_order}, 
+                        labels={"age_grp": "Age Group", "gender":"Gender"})
+        fig.update_xaxes(title="Finish time (min)", showgrid=True, minor_griddash="dot", gridcolor='grey')
+        fig.update_yaxes(showline=True, linewidth=2, linecolor='black')
+        fig.update_layout(showlegend=False)
+        fig.update_traces(meanline_visible=True)
+        fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+
         return fig
 
 
@@ -78,7 +103,7 @@ class SCB:
 
 def normalized(df):
     df_copy = df.copy()
-    for col in df.columns: 
+    for col in df.columns:
         df_copy[col] = (df_copy[col] - df_copy[col].min())/(df_copy[col].max() - df_copy[col].min())
     return df_copy
 
@@ -106,7 +131,9 @@ def age_vs_gender_pyramid(scb_grp, scb_nrl, race_grp, race_nrl):
                 text=scb_grp["men"].astype('int'),
                 textposition = "none",
                 hoverinfo='text',
-                marker=dict(color='green')
+                marker=dict(color='green'), 
+                legendgroup="scb",
+                legendgrouptitle_text="SCB",
                 ),
             go.Bar(y=y,
                 x=-scb_nrl["women"],
@@ -115,27 +142,31 @@ def age_vs_gender_pyramid(scb_grp, scb_nrl, race_grp, race_nrl):
                 text=scb_grp["women"].astype('int'),
                 textposition = "none",
                 hoverinfo='text',
-                marker=dict(color='red')
+                marker=dict(color='red'),
+                legendgroup="scb",
                 ),
             go.Bar(y=y,
                 x=race_nrl["M"],
                 orientation='h',
+                name="M",
                 text=race_grp["M"].astype('int'),
                 textposition = "none",
                 hoverinfo='text',
-                showlegend=False,
                 opacity=0.5,
-                marker=dict(color='darkgreen')
+                marker=dict(color='darkgreen'),
+                legendgroup="race",
+                legendgrouptitle_text="RACE",
                 ),
             go.Bar(y=y,
                 x=-race_nrl["F"],
                 orientation='h',
+                name="F",
                 text=race_grp["F"].astype('int'),
                 textposition = "none",
                 hoverinfo='text',
-                showlegend=False,
                 opacity=0.5,
-                marker=dict(color='darkred')
+                marker=dict(color='darkred'),
+                legendgroup="race",
                 )]
     return go.Figure(layout=layout, data=data)
 
