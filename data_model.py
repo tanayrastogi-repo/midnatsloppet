@@ -12,6 +12,7 @@ class Race:
         #----- EDITS TO DATA -----#
         self.add_age_gender()
         self.format_time()
+        self.add_finish_status()
 
     def add_age_gender(self, ):
         self.data["age_grp"] = self.data['class'].apply(lambda x: re.split(r'(?<=[A-Za-z])', x)[1])
@@ -29,6 +30,11 @@ class Race:
 
         self.data["time"] = self.data["time"].apply(lambda x: mmss_to_timedelta(x))
 
+    def add_finish_status(self, ):
+        self.data["finished"] = True
+        # False at places that did not finish
+        idx = self.data[self.data["place"] == ""].index
+        self.data.loc[idx, "finished"] = False
 
     def get_age_gender_table(self):
         race_group = self.data.groupby(["age_grp", "gender"])["name"].count().reset_index().pivot(index="age_grp" ,columns="gender", values='name')
@@ -38,10 +44,10 @@ class Race:
     def plot_hist_times_gender_class(self, ):
         # Preparing for plotting
         plot_data = self.data.copy()
+        # Drop the participants that did not finish the race
+        plot_data = plot_data[plot_data["finished"]]
         # Drop the "U" gender categories
         plot_data = plot_data.drop(plot_data[plot_data["gender"] == "U"].index)
-        # Drop the participants that did not finish the race
-        plot_data = plot_data.drop(plot_data[plot_data["place"] == ""].index)
         # Time to minutes
         plot_data["time_min"] = plot_data["time"].dt.total_seconds() / 60.0
 
@@ -62,7 +68,7 @@ class Race:
         fig.update_traces(meanline_visible=True)
         fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
 
-        return fig
+        return fig, plot_data
 
 
 
