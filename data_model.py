@@ -50,6 +50,7 @@ class Race:
         # Drop the "U" gender categories
         df = self.data.drop(self.data[self.data["gender"] == "U"].index)
         table = df.groupby(["age_grp", "gender"])["time_min"].mean().reset_index().pivot(index="age_grp" ,columns="gender", values='time_min')
+        table["delta[F-M]"] = table["F"] - table["M"]
         return table
 
     def get_gender_ratio(self, ):

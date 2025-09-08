@@ -113,22 +113,8 @@ def main():
         df = df.reset_index()
         st.dataframe(df.pivot(index="age_grp", columns="gender", values="time"))
 
-    # Class wise distribution
-    # age_classes = race.data["age_grp"].unique()
-    # # age_classes.sort()
-    # # age_selection   = st.multiselect("Select AGE",    options=age_classes, default=age_classes)
-    # # gender_classes = ["M", "F"]
-    # # gender_selection= st.multiselect("Select GENDER", options=gender_classes, default=gender_classes)
-
-    # # classes = [g+a for g in gender_selection for a in age_selection]
-    # # fig, avg_times = race.plot_hist_times_class(classes)
-    # # col1, col2 = st.columns([0.8, 0.2])
-    # # with col1: 
-    # #     st.plotly_chart(fig, use_container_width=True)
-    # # with col2: 
-    # #     st.dataframe(avg_times)
-
-    st.dataframe(race.get_age_gender_finish_time())
+    page_text.finish_time_2()
+    st.table(race.get_age_gender_finish_time())
 
 
 

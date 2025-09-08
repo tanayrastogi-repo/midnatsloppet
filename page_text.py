@@ -88,7 +88,14 @@ Now focusing just on the finish time for the participants.
 For all the 25781 participants that finished the race, the average finish time for men is smaller than female.
 The men (at an average) are 8.3 min faster than women in this race.
 
+    """, unsafe_allow_html=True)
+
+def finish_time_2():
+    return st.markdown("""
+Even when we analyze this data divided across age and gender, in all cases the men are faster than women, except for age group 70-74 where females are faster.
+
     Caveat:
         * This analysis is only for the participants that finihsed the race and have a place.
+        * I ignored the "U" section, as there is too less data under this label.
 
     """, unsafe_allow_html=True)
